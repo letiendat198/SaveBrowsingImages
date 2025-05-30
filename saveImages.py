@@ -27,9 +27,19 @@ class BurpExtender(IBurpExtender, IProxyListener, IHttpListener, IResponseInfo):
     def processHttpMessage(self, toolflag, messageIsRequest, messageInfo):
         if (messageIsRequest == False):
             response = messageInfo.getResponse()
+            request = messageInfo.getRequest()
             responseInfo = self._helpers.analyzeResponse(response)
+            requestInfo = self._helpers.analyzeRequest(messageInfo)
 
             # Find out if image
+            url = requestInfo.getUrl()
+            params = requestInfo.getParameters()
+            fileName = "-1"
+            for param in params:
+                if param.getName() == 'page':
+                    fileName = param.getValue()
+                    break
+            self._stdout.println(url)
             inferredMime = responseInfo.getInferredMimeType()
             statedMime = responseInfo.getStatedMimeType()
             # Build list to compare against
@@ -44,8 +54,8 @@ class BurpExtender(IBurpExtender, IProxyListener, IHttpListener, IResponseInfo):
 
             if (statedMime in imageMimeTypes) or (inferredMime in imageMimeTypes):
                 # Build file path
-                filePathBase = "/PLEASE/REPLACE/ME/"
-                fileName = datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
+                filePathBase = "D:/SaveBrowsingImages/Images/"
+                # fileName = datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
                 fileExtension = "." + inferredMime.lower()
                 # Write to file
                 f = open(filePathBase + fileName + fileExtension, "wb")
